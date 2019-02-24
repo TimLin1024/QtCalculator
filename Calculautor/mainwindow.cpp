@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QGroupBox>
+#include <QtMath>
 
 double pi = M_PI;
 MainWindow::MainWindow(QWidget *parent) :
@@ -23,13 +24,9 @@ MainWindow::MainWindow(QWidget *parent) :
     //屏蔽放大窗口按钮
     setWindowFlags(Qt::CustomizeWindowHint| Qt::WindowCloseButtonHint| Qt::WindowMinimizeButtonHint);
 
-    QAction *newAction = new QAction("Quit",this);
-    newAction->setShortcut(QKeySequence::Quit);
-    newAction->setToolTip("Quit");
-    newAction->setStatusTip("Quit Now");
-
-    QMenu *newMenu = menuBar()->addMenu("退出");
-    newMenu->addAction(newAction);
+    QAction *helpAction = new QAction("使用说明",this);
+    QMenu *newMenu = menuBar()->addMenu("帮助");
+    newMenu->addAction(helpAction);
 
     QAction *openAction = new QAction(tr("&转换"), this);
     openAction->setStatusTip(tr("单位、进制转换"));
@@ -38,10 +35,10 @@ MainWindow::MainWindow(QWidget *parent) :
     toolBar->addAction(openAction);
     /*信号槽的绑定
      **/
-    connect(openAction,         SIGNAL(triggered(bool)),this,SLOT(unitSelected()));
-    connect(newAction,          SIGNAL(triggered(bool)),this,SLOT(onQuitClicked()));
+    connect(openAction,         SIGNAL(triggered(bool)),this,SLOT(transfrom()));
+    connect(helpAction,          SIGNAL(triggered(bool)),this,SLOT(help()));
     connect(ui->actionAbout_Qt, SIGNAL(triggered(bool)),qApp,SLOT(aboutQt()));
-    connect(ui->actionAbout,    SIGNAL(triggered(bool)),this,SLOT(help()));
+    connect(ui->actionAbout,    SIGNAL(triggered(bool)),this,SLOT(aboutCalculator()));
 
     connect(ui->btnClear,       SIGNAL(clicked(bool)),this, SLOT(clear()));
     connect(ui->btnClear_1,     SIGNAL(clicked(bool)),this, SLOT(clearLast()));
@@ -96,7 +93,7 @@ void MainWindow::help()
                                     "2.使用求“倒数”、“sin”、“cos”和“tan”功能时请先输入数值再点击相应的按钮;\n"
                                     "3.“％”和“00”按钮，这两个按钮并不是运算符，仅仅是修改编辑框；\n"
                                     "4.“pi”按钮: 当点击这个按钮后，无论刚才输入何数字，均被删除，用pi(取3.14159)取代; \n"
-                                    "5.“n!”按钮，阶乘运算只支持小于40的正整数；\n"
+                                    "5.“n!”按钮，阶乘运算只支持不大于170的正整数；\n"
                                     "6.“x^y”按钮，此按钮用于乘方运算，使用时能要先选择底数后选择指数，注意数值范围；\n"
                                     "7.“ln”和“log”按钮，“ln”按钮是求底数为e的对数，“log”按钮是底数为10的对数；\n"
                                     "8.“Mod”求模运算符，只支持整型数；\n"
@@ -105,7 +102,7 @@ void MainWindow::help()
 }
 
 //转换功能
-void MainWindow::unitSelected()
+void MainWindow::transfrom()
 {
     selectDialog = new QDialog(this);
     QDialogButtonBox *buttonBox;
@@ -170,13 +167,13 @@ void MainWindow::unitCalc()
 }
 
 
-void MainWindow::onQuitClicked()
+void MainWindow::aboutCalculator()
 {
-    Dialog dialog;
-    if(dialog.exec() == QDialog::Accepted){
-       qApp->quit();
-    }
-    dialog.exec();
+    QMessageBox::about(this,"关于 计算器","此计算器为C++课程设计而编写，旨在:\n"
+                                     "（1）使自身对C++基本语法熟练掌握；\n"
+                                     "（2）训练自身对一个实际应用系统进行综合分析、设计、编程及调试等的能力；"
+                                     "（3）培养自身自主学习和独立创新的精神。");
+
 }
 
 //清除数据
@@ -250,15 +247,24 @@ void MainWindow::actionChanged()
             displayNumber();
         }//sin函数
         else if(button == ui->btnSin){
-            currentNumber = QString::number(sin(currentNumber.toDouble()));
+            currentNumber = QString::number(qSin(qDegreesToRadians(currentNumber.toDouble())));
             displayNumber();
         }//cos函数
         else if(button == ui->btnCos){
-            currentNumber = QString::number(cos(currentNumber.toDouble()));
+            if(currentNumber.toInt()%90 == 0 && currentNumber.toInt() % 180 != 0){
+                currentNumber = "0";
+            }else{
+                currentNumber = QString::number(qCos(qDegreesToRadians(currentNumber.toDouble())));
+            }
             displayNumber();
         }//tan函数
         else if(button == ui->btnTan){
-            currentNumber = QString::number(tan(currentNumber.toDouble()));
+            if(currentNumber.toInt()%90 == 0 && currentNumber.toInt() % 180 != 0){
+                currentNumber = "输入有误";
+            }else{
+                currentNumber = QString::number(qTan(qDegreesToRadians(currentNumber.toDouble())));
+
+            }
             displayNumber();
         }//倒数
         else if(button == ui->btn1_X){
@@ -270,16 +276,16 @@ void MainWindow::actionChanged()
             if(currentNumber.contains(".")){
                 statusBar()->showMessage("请输入整数");
                 return ;
-            }else if(n >= 40){
-                statusBar()->showMessage("请输入0-39之间的数字");
+            }else if(n > 170){
+                statusBar()->showMessage("请输入0-170之间的数字");
                 return;
             }
-            long long sum = 1;
+            double sum = 1;
             while(n > 1){
                 sum *= n;
                 n--;
             }
-            currentNumber = QString::number((sum));
+            currentNumber = QString::number(sum);
             displayNumber();
         }//pi
         else if(button == ui->btnPi){
@@ -481,7 +487,7 @@ void MainWindow::evaluationClicked()
     }
     case AndFlag:
     {
-//        currentNumber = QString::number(QString::number(lastNumber.toInt(),2).toInt() & QString::number(currentNumber.toInt(),2).toInt());
+
         currentNumber = QString::number(lastNumber.toInt() & currentNumber.toInt());
         break;
     }

@@ -753,12 +753,15 @@
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>true</bool>
+    <bool>false</bool>
    </attribute>
   </widget>
   <action name="actionAbout">
    <property name="text">
-    <string>帮助</string>
+    <string>关于计算器</string>
+   </property>
+   <property name="toolTip">
+    <string>关于计算器</string>
    </property>
   </action>
   <action name="actionAbout_Qt">

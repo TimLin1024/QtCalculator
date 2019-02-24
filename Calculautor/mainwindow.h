@@ -6,6 +6,7 @@
 #include <QDialog>
 #include <QLabel>
 #include <QComboBox>
+#include <QtCore/qmath.h>
 
 namespace Ui {
 class MainWindow;
@@ -63,12 +64,12 @@ public slots:
     void decimalPointClicked();
     void evaluationClicked();
 //    void onAppAboutClicked();
-    void onQuitClicked();
+    void aboutCalculator();
 
     void help();
-    void unitSelected();
+    void transfrom();
     void unitCalc();
-    QString fun_1(int n);
+
 };
 
 #endif // MAINWINDOW_H
